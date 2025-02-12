@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.0",
   "private": true,
-  "homepage": "https://GITHUB_USER.github.io/GITHUB_REPO/",
+  "homepage": "https://USER.github.io/REPO/",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",

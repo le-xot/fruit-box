@@ -6,5 +6,5 @@ import svgLoader from 'vite-svg-loader'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue(), svgLoader()],
-  base: process.env.GITHUB_REPO,
+  base: process.env.REPO,
 })
