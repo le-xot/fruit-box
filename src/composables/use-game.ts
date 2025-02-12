@@ -1,4 +1,4 @@
-// src/game.ts
+// src/composables/use-game.ts
 
 export enum FruitsEnum {
   Apple = 'Яблоки',
@@ -14,7 +14,7 @@ export enum FruitEnum {
 export class Box {
   constructor(
     public label: FruitsEnum,
-    public isOpen: boolean,
+    public isOpen: boolean = false,
     public prediction: FruitsEnum | null = null,
     public content: FruitsEnum | null = null,
     public took: FruitEnum | null = null,
@@ -51,16 +51,16 @@ export class FruitGame {
 
   constructor() {
     this._boxes = [
-      new Box(FruitsEnum.Apple, false),
-      new Box(FruitsEnum.AppleAndOrange, false),
-      new Box(FruitsEnum.Orange, false),
+      new Box(FruitsEnum.Apple),
+      new Box(FruitsEnum.AppleAndOrange),
+      new Box(FruitsEnum.Orange),
     ]
   }
 
   toJSON() {
     return {
       indexOpenedBox: this.indexOpenedBox,
-      boxes: this._boxes.map((box) => box.toJSON()),
+      boxes: this._boxes.map(box => box.toJSON()),
     }
   }
 
@@ -77,7 +77,7 @@ export class FruitGame {
 
   restart() {
     this.indexOpenedBox = null
-    this._boxes.forEach((box) => {
+    this._boxes.forEach(box => {
       box.isOpen = false
       box.prediction = null
       box.content = null
@@ -86,22 +86,20 @@ export class FruitGame {
   }
 
   get boxes(): Box[] {
-    return this._boxes.map((box) => box.copy())
+    return this._boxes.map(box => box.copy())
   }
 
-  // Открытие первой коробки (единственный выбор без предсказаний)
-  private openOne(indexBox: number): void {
-    if (this.indexOpenedBox !== null) throw new Error('Function only for first opening')
+  private openFirstBox(indexBox: number): void {
+    if (this.indexOpenedBox !== null) throw new Error('Первую коробку можно открыть только один раз')
     this.indexOpenedBox = indexBox
     const box = this._boxes[indexBox]
 
     if (box.label === FruitsEnum.AppleAndOrange) {
-      // Симулируем достать один фрукт
       box.took = Math.random() < 0.5 ? FruitEnum.Apple : FruitEnum.Orange
       box.content = box.took === FruitEnum.Apple ? FruitsEnum.Apple : FruitsEnum.Orange
-      // Распределяем содержимое остальных коробок (логика из примера React)
+
+      // Распределяем содержимое остальных коробок
       const [boxApple, boxAppleAndOrange, boxOrange] = this._boxes
-      // Значения по умолчанию:
       boxApple.content = FruitsEnum.AppleAndOrange
       boxAppleAndOrange.content = FruitsEnum.Orange
       boxOrange.content = FruitsEnum.Apple
@@ -118,52 +116,40 @@ export class FruitGame {
     box.isOpen = true
   }
 
-  // Установка предсказаний для коробок, кроме открытой первой
   public setPrediction(indexBox: number, prediction: FruitsEnum): void {
-    if (this.indexOpenedBox === null) throw new Error('Function only for subsequent openings')
-    if (indexBox === this.indexOpenedBox) throw new Error('Cannot predict opened box')
-    const openedOnlyOne = this._boxes.filter((box) => box.isOpen).length === 1
-    if (!openedOnlyOne) {
-      throw new Error('Only one box can be opened at a time')
-    }
-    const box = this._boxes[indexBox]
-    box.prediction = prediction
+    if (this.indexOpenedBox === null) throw new Error('Сначала откройте первую коробку')
+    if (indexBox === this.indexOpenedBox) throw new Error('Нельзя предсказать содержимое уже открытой коробки')
+    const openedOnlyOne = this._boxes.filter(box => box.isOpen).length === 1
+    if (!openedOnlyOne) throw new Error('Для установки предсказания должна быть открыта только одна коробка')
+    this._boxes[indexBox].prediction = prediction
   }
 
-  // Открытие остальных коробок после указания предсказаний
-  private openOther(indexBox: number): boolean {
-    if (this.indexOpenedBox === null) throw new Error('Function only for subsequent openings')
-    const isPredicted = this._boxes.filter((box) => !box.isOpen).every((box) => box.prediction !== null)
-    if (!isPredicted) {
-      throw new Error('Не все ящики предсказаны, выберите остальные предсказания')
-    }
+  private openOtherBox(indexBox: number): boolean {
+    if (this.indexOpenedBox === null) throw new Error('Сначала откройте первую коробку')
+    const allPredicted = this._boxes.filter(box => !box.isOpen).every(box => box.prediction !== null)
+    if (!allPredicted) throw new Error('Не все коробки предсказаны, укажите оставшиеся предсказания')
     const box = this._boxes[indexBox]
-    if (box.isOpen) {
-      throw new Error('Box is already opened')
-    }
+    if (box.isOpen) throw new Error('Эта коробка уже открыта')
     box.isOpen = true
 
-    const isEveryOpened = this._boxes.every((b) => b.isOpen)
-    if (isEveryOpened) {
-      // После открытия всех коробок убираем значение took у первой
+    const allOpened = this._boxes.every(b => b.isOpen)
+    if (allOpened) {
       this._boxes[this.indexOpenedBox].took = null
     }
-    return isEveryOpened
+    return allOpened
   }
 
-  // Метод открытия коробок: если ни одна не открыта – openOne, иначе openOther
   public open(indexBox: number): boolean {
     if (this.indexOpenedBox === null) {
-      this.openOne(indexBox)
+      this.openFirstBox(indexBox)
       return false
     } else {
-      return this.openOther(indexBox)
+      return this.openOtherBox(indexBox)
     }
   }
 
-  // Проверка выигрыша: сравнение предсказаний с содержимым
   public checkWin(): boolean {
-    return this._boxes.every((box) => {
+    return this._boxes.every(box => {
       if (box.isOpen && box.prediction) {
         return box.prediction === box.content
       }
