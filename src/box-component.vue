@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {  ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { FruitsEnum } from './game'
 
 interface Props {

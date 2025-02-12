@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { onMounted, ref, watch } from 'vue'
-import BoxComponent from './BoxComponent.vue'
+import BoxComponent from './box-component.vue'
 import { FruitGame, FruitsEnum, YouLostError } from './game'
 
 const STORAGE_KEY = 'fruitGameState'
