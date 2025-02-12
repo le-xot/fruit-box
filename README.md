@@ -2,7 +2,6 @@
 
 ## Dependencies
 
-* [Node.js: v20](https://nodejs.org/en)
 * [PNPM: v9](https://pnpm.io/)
 
 ## Cli
