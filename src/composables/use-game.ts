@@ -1,11 +1,16 @@
 export enum ChestEnum {
+  // eslint-disable-next-line no-unused-vars
   GOLD = 'Сундук с золотом',
+  // eslint-disable-next-line no-unused-vars
   MIXED = 'Сундук с золотом и серебром',
+  // eslint-disable-next-line no-unused-vars
   SILVER = 'Сундук с серебром',
 }
 
 export enum CoinEnum {
+  // eslint-disable-next-line no-unused-vars
   GOLDCOIN = 'Золотая монета',
+  // eslint-disable-next-line no-unused-vars
   SILVERCOIN = 'Серебряная монета',
 }
 
