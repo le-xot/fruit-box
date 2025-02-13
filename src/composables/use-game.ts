@@ -1,16 +1,11 @@
 export enum ChestEnum {
-  // eslint-disable-next-line no-unused-vars
   GOLD = 'Сундук с золотом',
-  // eslint-disable-next-line no-unused-vars
   MIXED = 'Сундук с золотом и серебром',
-  // eslint-disable-next-line no-unused-vars
   SILVER = 'Сундук с серебром',
 }
 
 export enum CoinEnum {
-  // eslint-disable-next-line no-unused-vars
   GOLDCOIN = 'Золотая монета',
-  // eslint-disable-next-line no-unused-vars
   SILVERCOIN = 'Серебряная монета',
 }
 
@@ -23,11 +18,12 @@ export interface BoxState {
 }
 
 function shuffleArray<T>(array: T[]): T[] {
-  for (let i = array.length - 1; i > 0; i--) {
+  const result = array.slice()
+  for (let i = result.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]]
+    [result[i], result[j]] = [result[j], result[i]]
   }
-  return array
+  return result
 }
 
 function getRandomPermutation(): { Apple: ChestEnum, AppleAndOrange: ChestEnum, Orange: ChestEnum } {
@@ -52,7 +48,7 @@ export class FruitGame {
 
   constructor() {
     const permutation = getRandomPermutation()
-    this.boxes = [
+    const boxes: BoxState[] = [
       {
         label: ChestEnum.GOLD,
         isOpen: false,
@@ -75,7 +71,7 @@ export class FruitGame {
         took: null,
       },
     ]
-    this.boxes = shuffleArray(this.boxes)
+    this.boxes = shuffleArray(boxes)
   }
 
   static fromJSON(json: any): FruitGame {
@@ -90,7 +86,13 @@ export class FruitGame {
       if (this.firstOpenedIndex === null) {
         this.firstOpenedIndex = index
         this.boxes[index].isOpen = true
-        this.boxes[index].took = Math.random() < 0.5 ? CoinEnum.GOLDCOIN : CoinEnum.SILVERCOIN
+        if (this.boxes[index].content === ChestEnum.GOLD) {
+          this.boxes[index].took = CoinEnum.GOLDCOIN
+        } else if (this.boxes[index].content === ChestEnum.SILVER) {
+          this.boxes[index].took = CoinEnum.SILVERCOIN
+        } else {
+          this.boxes[index].took = Math.random() < 0.5 ? CoinEnum.GOLDCOIN : CoinEnum.SILVERCOIN
+        }
       }
     }
   }

@@ -17,6 +17,11 @@ const emit = defineEmits<{
   (event: 'click'): void
   (event: 'prediction-change', value: ChestEnum): void
 }>()
+function onPredictionChangeInternal(e: Event) {
+  const target = e.target as HTMLSelectElement
+  const value = target.value as ChestEnum
+  emit('prediction-change', value)
+}
 
 const { label, isOpen, content, prediction, took, showPrediction, canChangePrediction } = toRefs(props)
 const localPrediction = ref(prediction.value || '')
@@ -28,25 +33,28 @@ const fruitOptions = computed(() => [
   { value: ChestEnum.SILVER, label: ChestEnum.SILVER },
   { value: ChestEnum.MIXED, label: ChestEnum.MIXED },
 ])
+const chestImageSrc = computed(() => {
+  if (label.value === ChestEnum.GOLD) return './chest-gold.webp'
+  if (label.value === ChestEnum.SILVER) return './chest-silver.webp'
+  if (label.value === ChestEnum.MIXED) return './chest-mixed.webp'
+  return ''
+})
 function handleClick() {
   emit('click')
-}
-function onPredictionChangeInternal(e: Event) {
-  const target = e.target as HTMLSelectElement
-  const value = target.value as ChestEnum
-  emit('prediction-change', value)
 }
 </script>
 
 <template>
   <div class="box-container">
     <div v-if="!isOpen" class="box" @click="handleClick">
-      <div class="text" style="min-height: 70px;">
-        {{ label }}
+      <div style="min-height: 70px; padding-bottom: 20px;">
+        <img style="width: 200px;" :src="chestImageSrc" alt="chest">
       </div>
-      <img style="width: 200px; height: 200px;" src="../assets/chest-closed.webp" alt="chest">
+      <transition name="fade">
+        <img v-if="!isOpen" style="width: 200px; height: 200px;" src="../assets/chest-closed.webp" alt="chest">
+      </transition>
       <div v-if="showPrediction">
-        <select v-model="localPrediction" style="padding: 10px; font-size: 15px;" :disabled="!canChangePrediction" @click.stop @change="onPredictionChangeInternal">
+        <select v-model="localPrediction" style="border: 0; background-color: rgba(255, 255, 255, 0.4); padding: 10px; font-size: 15px;" :disabled="!canChangePrediction" @click.stop @change="onPredictionChangeInternal">
           <option value="">
             Выберите содержимое
           </option>
@@ -57,10 +65,12 @@ function onPredictionChangeInternal(e: Event) {
       </div>
     </div>
     <div v-else class="box">
-      <div class="text" style="min-height: 70px;">
-        {{ label }}
+      <div style="min-height: 70px; padding-bottom: 20px;">
+        <img style="width: 200px;" :src="chestImageSrc" alt="chest">
       </div>
-      <img style="width: 200px; height: 200px;" src="../assets/chest-opened.webp" alt="chest">
+      <transition>
+        <img v-if="isOpen" style="width: 200px; height: 200px;" src="../assets/chest-opened.webp" alt="chest">
+      </transition>
       <div v-if="took">
         <div class="text">
           Вы достали: <b>{{ took }}</b>
@@ -81,9 +91,7 @@ function onPredictionChangeInternal(e: Event) {
   margin-top: 20px;
   font-size: 20px;
 }
-
 .box-container {
-
   margin: 10px;
   padding: 10px;
   text-align: center;

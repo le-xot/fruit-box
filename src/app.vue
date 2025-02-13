@@ -1,14 +1,20 @@
 <script lang="ts" setup>
+import TWallpaper from '@twallpaper/vue'
 import { onMounted, ref, watch } from 'vue'
 import box from './components/box.vue'
 import notification from './components/notification.vue'
 import { ChestEnum, FruitGame } from './composables/use-game'
 import { useNotification } from './composables/use-notification'
+import type { TWallpaperOptions } from '@twallpaper/vue'
+// eslint-disable-next-line ts/ban-ts-comment
+// @ts-expect-error
+import '@twallpaper/vue/css'
 
 const STORAGE_KEY = 'coinGameState'
 const game = ref<FruitGame | null>(null)
 const gameState = ref<'playing' | 'won' | 'lost'>('playing')
 const { showNotification } = useNotification()
+const attempts = ref(1)
 function loadGame() {
   const savedState = localStorage.getItem(STORAGE_KEY)
   if (savedState) {
@@ -16,19 +22,22 @@ function loadGame() {
       const json = JSON.parse(savedState)
       game.value = FruitGame.fromJSON(json.game)
       gameState.value = json.gameState
+      attempts.value = json.attempts || 1
     } catch {
       game.value = new FruitGame()
       gameState.value = 'playing'
+      attempts.value = 1
     }
   } else {
     game.value = new FruitGame()
     gameState.value = 'playing'
+    attempts.value = 1
   }
 }
 onMounted(loadGame)
-watch([game, gameState], () => {
+watch([game, gameState, attempts], () => {
   if (game.value) {
-    const stateToSave = { game: game.value, gameState: gameState.value }
+    const stateToSave = { game: game.value, gameState: gameState.value, attempts: attempts.value }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave))
   }
 }, { deep: true })
@@ -58,16 +67,34 @@ function handleCheck() {
   }
 }
 function handleRestart() {
+  attempts.value++
   localStorage.removeItem(STORAGE_KEY)
   game.value = new FruitGame()
   gameState.value = 'playing'
 }
 const canChangePrediction = ref(true)
+const twallpaper = ref<InstanceType<typeof TWallpaper>>()
+const options = ref<TWallpaperOptions>({
+  animate: false,
+  colors: [
+    '#90E0EF',
+    '#48CAE4',
+    '#00B4D8',
+    '#0096C7',
+    '#0077B6',
+    '#023E8A',
+  ],
+  pattern: {
+    mask: false,
+    opacity: 0.3,
+    image: 'https://twallpaper.js.org/patterns/underwater_world.svg',
+  },
+})
 </script>
 
 <template>
   <div v-if="gameState === 'lost'" class="loss-screen fullscreen">
-    <div style="display: flex; flex-direction: column; align-items: center;">
+    <div style="display: flex; flex-direction: column; align-items: center; ">
       <div class="text">
         {{ "Ты проиграл" }}
       </div>
@@ -76,20 +103,24 @@ const canChangePrediction = ref(true)
       </button>
     </div>
   </div>
-  <div v-else-if="gameState === 'won'" class="win-screen fullscreen">
+  <div v-else-if="gameState === 'won'" class="win-screen fullscreen" style="display: flex; flex-direction: column; align-items: center;">
     <div class="text">
-      {{ "Ты победил" }}
+      {{ 'Ты победил' }}
+    </div>
+    <div class="text" style="font-size: 5vw;">
+      {{ `попыток потрачено: ${attempts}` }}
     </div>
   </div>
   <div v-else>
     <div class="centered-container">
-      <h1>Загадка с сундуками</h1>
-      <p style="max-width: 800px; max-height: 25%; font-size: 18px;">
-        Есть три сундука: в одном лежат только золотые монеты, в другом — только серебрянные, а в третьем — и золотые, и серебрянные.
-        Однако все сундуки подписаны неправильно. Вам можно достать только одну монету из любого сундука и по ней определить, что находится в остальных сундуках.
+      <p style="font-size: 50px; text-shadow: 0px 1px 16px rgba(0, 0, 0, 0.4);">
+        Загадка с сундуками
+      </p>
+      <p style="max-width: 800px; max-height: 25%; font-size: 25px; text-shadow: 0px 1px 16px rgba(0, 0, 0, 0.4);">
+        Есть три сундука: в одном лежат только золотые монеты, в другом — только серебрянные, а в третьем — и золотые, и серебрянные. Однако все сундуки подписаны неправильно. Вам можно достать только одну монету из любого сундука и по ней определить, что находится в остальных сундуках.
         <br><br>
         <b style="color: #992211;">
-          У вас есть всего одна попытка! Прежде чем открывать первый сундук, попробуйте определить содержимое остальных сундуках.
+          Вы можете открыть только один сундук!
         </b>
       </p>
       <div v-if="game" class="box-container mobile">
@@ -108,10 +139,14 @@ const canChangePrediction = ref(true)
         />
       </div>
       <div v-if="game && game.firstOpenedIndex !== null && game.boxes.filter(b => !b.isOpen).length > 0" class="button-container">
-        <button @click="handleCheck">
+        <button class="button" style="background-color: #023E8A; margin-bottom: 40px;" @click="handleCheck">
           Проверить
         </button>
       </div>
+      <TWallpaper
+        ref="twallpaper"
+        :options="options"
+      />
     </div>
     <notification />
   </div>
@@ -128,7 +163,7 @@ button {
   to { opacity: 1; }
 }
 
-@media screen and (max-width: 700px) {
+@media screen and (max-width: 800px) {
   .mobile {
     flex-direction: column;
     gap: 20px;
@@ -154,11 +189,11 @@ button {
 .centered-container {
     width: 80%;
     margin: auto;
+    margin-top: 10vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100vh;
     text-align: center;
     user-select: none;
 }
