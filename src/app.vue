@@ -2,10 +2,10 @@
 import { onMounted, ref, watch } from 'vue'
 import box from './components/box.vue'
 import notification from './components/notification.vue'
-import { FruitGame, FruitsEnum } from './composables/use-game'
+import { ChestEnum, FruitGame } from './composables/use-game'
 import { useNotification } from './composables/use-notification'
 
-const STORAGE_KEY = 'fruitGameState'
+const STORAGE_KEY = 'coinGameState'
 const game = ref<FruitGame | null>(null)
 const gameState = ref<'playing' | 'won' | 'lost'>('playing')
 const { showNotification } = useNotification()
@@ -40,7 +40,7 @@ function handleBoxClick(index: number) {
     showNotification(error.message)
   }
 }
-function handlePredictionChange(index: number, value: FruitsEnum) {
+function handlePredictionChange(index: number, value: ChestEnum) {
   if (!game.value || gameState.value !== 'playing') return
   try {
     game.value.setPrediction(index, value)
@@ -67,23 +67,32 @@ const canChangePrediction = ref(true)
 
 <template>
   <div v-if="gameState === 'lost'" class="loss-screen fullscreen">
-    <h1>Ты проиграл</h1>
+    <div style="display: flex; flex-direction: column; align-items: center;">
+      <div class="text">
+        {{ "Ты проиграл" }}
+      </div>
+      <button class="button" style="margin-top: 50px;" @click="handleRestart">
+        Начать заново
+      </button>
+    </div>
   </div>
   <div v-else-if="gameState === 'won'" class="win-screen fullscreen">
-    <h1>Ты выиграл</h1>
+    <div class="text">
+      {{ "Ты победил" }}
+    </div>
   </div>
   <div v-else>
     <div class="centered-container">
-      <h1>Игра с коробками</h1>
+      <h1>Загадка с сундуками</h1>
       <p style="max-width: 800px; max-height: 25%; font-size: 18px;">
-        Есть три коробки: в одной лежат только яблоки, в другой — только апельсины, а в третьей — и яблоки, и апельсины.
-        Однако все коробки подписаны неправильно. Вам можно достать только один фрукт из любой коробки и по нему определить, что находится в остальных коробках.
+        Есть три сундука: в одном лежат только золотые монеты, в другом — только серебрянные, а в третьем — и золотые, и серебрянные.
+        Однако все сундуки подписаны неправильно. Вам можно достать только одну монету из любого сундука и по ней определить, что находится в остальных сундуках.
         <br><br>
         <b style="color: #992211;">
-          У вас есть всего одна попытка! Прежде чем открывать первую коробку, попробуйте определить содержимое остальных коробок.
+          У вас есть всего одна попытка! Прежде чем открывать первый сундук, попробуйте определить содержимое остальных сундуках.
         </b>
       </p>
-      <div v-if="game" class="box-container">
+      <div v-if="game" class="box-container mobile">
         <box
           v-for="(b, index) in game.boxes"
           :key="index"
@@ -103,11 +112,6 @@ const canChangePrediction = ref(true)
           Проверить
         </button>
       </div>
-      <div v-if="gameState !== 'playing'" class="button-container">
-        <button @click="handleRestart">
-          Начать заново
-        </button>
-      </div>
     </div>
     <notification />
   </div>
@@ -118,9 +122,33 @@ button {
   padding: 10px 20px;
   font-size: 16px;
 }
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@media screen and (max-width: 700px) {
+  .mobile {
+    flex-direction: column;
+    gap: 20px;
+  }
+}
+
+.text {
+  font-size: 10vw;
+  text-shadow: 0px 1px 16px rgba(0, 0, 0, 0.4);
+}
+
+.button{
+  display: flex;
+  width: 200px;
+  justify-content: center;
+  border: none;
+  color: #fff;
+  background-color: #9BC53D;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
 .centered-container {
@@ -130,7 +158,7 @@ button {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 90vh;
+    height: 100vh;
     text-align: center;
     user-select: none;
 }
@@ -138,7 +166,6 @@ button {
 .box-container {
     display: flex;
     justify-content: center;
-    margin-top: 50px;
 }
 
 .button-container {
@@ -159,11 +186,11 @@ button {
   animation: fadeIn 1s ease-in;
 }
 .loss-screen {
-  background-color: #000;
+  background-color: #404E4D;
   color: #fff;
 }
 .win-screen {
-  background-color: #5af462;
+  background-color: #9BC53D;
   color: #fff;
 }
 </style>

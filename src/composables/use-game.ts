@@ -1,38 +1,46 @@
-export enum FruitsEnum {
+export enum ChestEnum {
   // eslint-disable-next-line no-unused-vars
-  Apple = 'Яблоки',
+  GOLD = 'Сундук с золотом',
   // eslint-disable-next-line no-unused-vars
-  AppleAndOrange = 'Яблоки и Апельсины',
+  MIXED = 'Сундук с золотом и серебром',
   // eslint-disable-next-line no-unused-vars
-  Orange = 'Апельсины',
+  SILVER = 'Сундук с серебром',
 }
 
-export enum FruitEnum {
+export enum CoinEnum {
   // eslint-disable-next-line no-unused-vars
-  Apple = 'Яблоко',
+  GOLDCOIN = 'Золотая монета',
   // eslint-disable-next-line no-unused-vars
-  Orange = 'Апельсин',
+  SILVERCOIN = 'Серебряная монета',
 }
 
 export interface BoxState {
-  label: FruitsEnum
+  label: ChestEnum
   isOpen: boolean
-  content: FruitsEnum | null
-  prediction: FruitsEnum | null
-  took: FruitEnum | null
+  content: ChestEnum | null
+  prediction: ChestEnum | null
+  took: CoinEnum | null
 }
 
-function getRandomPermutation(): { Apple: FruitsEnum, AppleAndOrange: FruitsEnum, Orange: FruitsEnum } {
+function shuffleArray<T>(array: T[]): T[] {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]]
+  }
+  return array
+}
+
+function getRandomPermutation(): { Apple: ChestEnum, AppleAndOrange: ChestEnum, Orange: ChestEnum } {
   const perms = [
     {
-      Apple: FruitsEnum.Orange,
-      AppleAndOrange: FruitsEnum.Apple,
-      Orange: FruitsEnum.AppleAndOrange,
+      Apple: ChestEnum.SILVER,
+      AppleAndOrange: ChestEnum.GOLD,
+      Orange: ChestEnum.MIXED,
     },
     {
-      Apple: FruitsEnum.AppleAndOrange,
-      AppleAndOrange: FruitsEnum.Orange,
-      Orange: FruitsEnum.Apple,
+      Apple: ChestEnum.MIXED,
+      AppleAndOrange: ChestEnum.SILVER,
+      Orange: ChestEnum.GOLD,
     },
   ]
   return perms[Math.floor(Math.random() * perms.length)]
@@ -46,27 +54,28 @@ export class FruitGame {
     const permutation = getRandomPermutation()
     this.boxes = [
       {
-        label: FruitsEnum.Apple,
+        label: ChestEnum.GOLD,
         isOpen: false,
         content: permutation.Apple,
         prediction: null,
         took: null,
       },
       {
-        label: FruitsEnum.AppleAndOrange,
+        label: ChestEnum.MIXED,
         isOpen: false,
         content: permutation.AppleAndOrange,
         prediction: null,
         took: null,
       },
       {
-        label: FruitsEnum.Orange,
+        label: ChestEnum.SILVER,
         isOpen: false,
         content: permutation.Orange,
         prediction: null,
         took: null,
       },
     ]
+    this.boxes = shuffleArray(this.boxes)
   }
 
   static fromJSON(json: any): FruitGame {
@@ -81,7 +90,7 @@ export class FruitGame {
       if (this.firstOpenedIndex === null) {
         this.firstOpenedIndex = index
         this.boxes[index].isOpen = true
-        this.boxes[index].took = Math.random() < 0.5 ? FruitEnum.Apple : FruitEnum.Orange
+        this.boxes[index].took = Math.random() < 0.5 ? CoinEnum.GOLDCOIN : CoinEnum.SILVERCOIN
       }
     }
   }
@@ -89,7 +98,7 @@ export class FruitGame {
   openRemainingBoxes(): void {
     const unopened = this.boxes.filter(b => !b.isOpen)
     if (unopened.some(b => b.prediction === null)) {
-      throw new Error('Укажите предсказания для всех закрытых коробок.')
+      throw new Error('Укажите предсказания для всех закрытых сундуков.')
     }
     this.boxes.forEach(b => {
       if (!b.isOpen) {
@@ -98,7 +107,7 @@ export class FruitGame {
     })
   }
 
-  setPrediction(index: number, prediction: FruitsEnum): void {
+  setPrediction(index: number, prediction: ChestEnum): void {
     this.boxes[index].prediction = prediction
   }
 

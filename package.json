@@ -13,6 +13,7 @@
     "deploy": "vite build && gh-pages -d dist"
   },
   "dependencies": {
+    "@twallpaper/vue": "2.1.2",
     "esbuild": "0.25.0",
     "pinia": "3.0.1",
     "typescript": "5.6.3",
