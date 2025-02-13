@@ -51,7 +51,7 @@ function handleClick() {
         <img style="width: 200px;" :src="chestImageSrc" alt="chest">
       </div>
       <transition name="fade">
-        <img v-if="!isOpen" style="width: 200px; height: 200px;" src="../assets/chest-closed.webp" alt="chest">
+        <img v-if="!isOpen" style="width: 200px; height: 200px;" src="/chest-closed.webp" alt="chest">
       </transition>
       <div v-if="showPrediction">
         <select v-model="localPrediction" style="border: 0; background-color: rgba(255, 255, 255, 0.4); padding: 10px; font-size: 15px;" :disabled="!canChangePrediction" @click.stop @change="onPredictionChangeInternal">
@@ -69,7 +69,7 @@ function handleClick() {
         <img style="width: 200px;" :src="chestImageSrc" alt="chest">
       </div>
       <transition>
-        <img v-if="isOpen" style="width: 200px; height: 200px;" src="../assets/chest-opened.webp" alt="chest">
+        <img v-if="isOpen" style="width: 200px; height: 200px;" src="/chest-opened.webp" alt="chest">
       </transition>
       <div v-if="took">
         <div class="text">
