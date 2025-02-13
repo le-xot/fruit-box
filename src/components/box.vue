@@ -19,22 +19,18 @@ const emit = defineEmits<{
 }>()
 
 const { label, isOpen, content, prediction, took, showPrediction, canChangePrediction } = toRefs(props)
-
 const localPrediction = ref(prediction.value || '')
 watch(prediction, (newVal) => {
   localPrediction.value = newVal || ''
 })
-
 const fruitOptions = computed(() => [
   { value: FruitsEnum.Apple, label: FruitsEnum.Apple },
   { value: FruitsEnum.Orange, label: FruitsEnum.Orange },
   { value: FruitsEnum.AppleAndOrange, label: FruitsEnum.AppleAndOrange },
 ])
-
 function handleClick() {
   emit('click')
 }
-
 function onPredictionChangeInternal(e: Event) {
   const target = e.target as HTMLSelectElement
   const value = target.value as FruitsEnum
@@ -47,12 +43,7 @@ function onPredictionChangeInternal(e: Event) {
     <div v-if="!isOpen" class="box" @click="handleClick">
       <p>{{ label }}</p>
       <div v-if="showPrediction">
-        <select
-          v-model="localPrediction"
-          :disabled="!canChangePrediction"
-          @click.stop
-          @change="onPredictionChangeInternal"
-        >
+        <select v-model="localPrediction" :disabled="!canChangePrediction" @click.stop @change="onPredictionChangeInternal">
           <option value="">
             Выберите содержимое
           </option>
@@ -65,7 +56,6 @@ function onPredictionChangeInternal(e: Event) {
         Открыть
       </button>
     </div>
-
     <div v-else class="box opened">
       <div v-if="took">
         <p>Вы достали: <b>{{ took }}</b></p>
