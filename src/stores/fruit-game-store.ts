@@ -14,9 +14,9 @@ export const useFruitGameStore = defineStore('fruitGame', {
     openBox(index: number) {
       if (this.gameState !== 'playing') return
       try {
-        const allOpened = this.game.openBox(index)
-        if (allOpened) {
-          this.gameState = this.game.checkWin() ? 'won' : 'lost'
+        this.game.openBox(index)
+        if (this.game.boxes.every(box => box.isOpen)) {
+          this.gameState = this.game.checkGameStatus() === 'won' ? 'won' : 'lost'
         }
       } catch (error: any) {
         alert(error.message)

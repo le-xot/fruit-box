@@ -2,7 +2,7 @@
 import { onMounted, ref, watch } from 'vue'
 import box from './components/box.vue'
 import notification from './components/notification.vue'
-import { FruitGame, FruitsEnum, YouLostError } from './composables/use-game'
+import { FruitGame, FruitsEnum } from './composables/use-game'
 import { useNotification } from './composables/use-notification'
 
 const STORAGE_KEY = 'fruitGameState'
@@ -52,13 +52,9 @@ function handleCheck() {
   if (!game.value) return
   try {
     game.value.openRemainingBoxes()
-    gameState.value = game.value.checkWin() ? 'won' : 'lost'
+    gameState.value = game.value.checkGameStatus()
   } catch (error: any) {
-    if (error instanceof YouLostError) {
-      gameState.value = 'lost'
-    } else {
-      showNotification(error.message)
-    }
+    showNotification(error.message)
   }
 }
 function handleRestart() {
@@ -77,13 +73,17 @@ const canChangePrediction = ref(true)
     <h1>Ты выиграл</h1>
   </div>
   <div v-else>
-    <div style="text-align: center; user-select: none;">
+    <div class="centered-container">
       <h1>Игра с коробками</h1>
-      <p style="max-width: 800px; margin: auto; font-size: 18px;">
-        Есть три коробки с неправильными подписями. Сначала выбери одну коробку – из неё будет вынут фрукт.
-        Затем укажи, что находится в двух оставшихся коробках.
+      <p style="max-width: 800px; max-height: 25%; font-size: 18px;">
+        Есть три коробки: в одной лежат только яблоки, в другой — только апельсины, а в третьей — и яблоки, и апельсины.
+        Однако все коробки подписаны неправильно. Вам можно достать только один фрукт из любой коробки и по нему определить, что находится в остальных коробках.
+        <br><br>
+        <b style="color: #992211;">
+          У вас есть всего одна попытка! Прежде чем открывать первую коробку, попробуйте определить содержимое остальных коробок.
+        </b>
       </p>
-      <div v-if="game" style="display: flex; justify-content: center; margin-top: 50px;">
+      <div v-if="game" class="box-container">
         <box
           v-for="(b, index) in game.boxes"
           :key="index"
@@ -98,12 +98,12 @@ const canChangePrediction = ref(true)
           @prediction-change="handlePredictionChange(index, $event)"
         />
       </div>
-      <div v-if="game && game.firstOpenedIndex !== null && game.boxes.filter(b => !b.isOpen).length > 0" style="margin-top: 30px;">
+      <div v-if="game && game.firstOpenedIndex !== null && game.boxes.filter(b => !b.isOpen).length > 0" class="button-container">
         <button @click="handleCheck">
           Проверить
         </button>
       </div>
-      <div v-if="gameState !== 'playing'" style="margin-top: 30px;">
+      <div v-if="gameState !== 'playing'" class="button-container">
         <button @click="handleRestart">
           Начать заново
         </button>
@@ -121,6 +121,28 @@ button {
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+.centered-container {
+    width: 80%;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 90vh;
+    text-align: center;
+    user-select: none;
+}
+
+.box-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 50px;
+}
+
+.button-container {
+    margin-top: 30px;
 }
 .fullscreen {
   user-select: none;

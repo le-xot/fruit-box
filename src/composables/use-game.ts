@@ -1,11 +1,16 @@
 export enum FruitsEnum {
+  // eslint-disable-next-line no-unused-vars
   Apple = 'Яблоки',
+  // eslint-disable-next-line no-unused-vars
   AppleAndOrange = 'Яблоки и Апельсины',
+  // eslint-disable-next-line no-unused-vars
   Orange = 'Апельсины',
 }
 
 export enum FruitEnum {
+  // eslint-disable-next-line no-unused-vars
   Apple = 'Яблоко',
+  // eslint-disable-next-line no-unused-vars
   Orange = 'Апельсин',
 }
 
@@ -17,23 +22,17 @@ export interface BoxState {
   took: FruitEnum | null
 }
 
-export class YouLostError extends Error {
-  constructor() {
-    super('You lost')
-  }
-}
-
-function getRandomPermutation(): { [key: string]: FruitsEnum } {
+function getRandomPermutation(): { Apple: FruitsEnum, AppleAndOrange: FruitsEnum, Orange: FruitsEnum } {
   const perms = [
     {
-      [FruitsEnum.Apple]: FruitsEnum.Orange,
-      [FruitsEnum.AppleAndOrange]: FruitsEnum.Apple,
-      [FruitsEnum.Orange]: FruitsEnum.AppleAndOrange,
+      Apple: FruitsEnum.Orange,
+      AppleAndOrange: FruitsEnum.Apple,
+      Orange: FruitsEnum.AppleAndOrange,
     },
     {
-      [FruitsEnum.Apple]: FruitsEnum.AppleAndOrange,
-      [FruitsEnum.AppleAndOrange]: FruitsEnum.Orange,
-      [FruitsEnum.Orange]: FruitsEnum.Apple,
+      Apple: FruitsEnum.AppleAndOrange,
+      AppleAndOrange: FruitsEnum.Orange,
+      Orange: FruitsEnum.Apple,
     },
   ]
   return perms[Math.floor(Math.random() * perms.length)]
@@ -46,9 +45,27 @@ export class FruitGame {
   constructor() {
     const permutation = getRandomPermutation()
     this.boxes = [
-      { label: FruitsEnum.Apple, isOpen: false, content: permutation[FruitsEnum.Apple], prediction: null, took: null },
-      { label: FruitsEnum.AppleAndOrange, isOpen: false, content: permutation[FruitsEnum.AppleAndOrange], prediction: null, took: null },
-      { label: FruitsEnum.Orange, isOpen: false, content: permutation[FruitsEnum.Orange], prediction: null, took: null },
+      {
+        label: FruitsEnum.Apple,
+        isOpen: false,
+        content: permutation.Apple,
+        prediction: null,
+        took: null,
+      },
+      {
+        label: FruitsEnum.AppleAndOrange,
+        isOpen: false,
+        content: permutation.AppleAndOrange,
+        prediction: null,
+        took: null,
+      },
+      {
+        label: FruitsEnum.Orange,
+        isOpen: false,
+        content: permutation.Orange,
+        prediction: null,
+        took: null,
+      },
     ]
   }
 
@@ -59,7 +76,7 @@ export class FruitGame {
     return game
   }
 
-  openBox(index: number): boolean {
+  openBox(index: number): void {
     if (!this.boxes[index].isOpen) {
       if (this.firstOpenedIndex === null) {
         this.firstOpenedIndex = index
@@ -67,29 +84,31 @@ export class FruitGame {
         this.boxes[index].took = Math.random() < 0.5 ? FruitEnum.Apple : FruitEnum.Orange
       }
     }
-    return this.boxes.every(b => b.isOpen)
   }
 
-  openRemainingBoxes(): boolean {
+  openRemainingBoxes(): void {
     const unopened = this.boxes.filter(b => !b.isOpen)
-    if (unopened.some(b => b.prediction === null)) throw new Error('Укажите предсказания для всех закрытых коробок.')
-    this.boxes.forEach((b) => {
+    if (unopened.some(b => b.prediction === null)) {
+      throw new Error('Укажите предсказания для всех закрытых коробок.')
+    }
+    this.boxes.forEach(b => {
       if (!b.isOpen) {
         b.isOpen = true
-        if (b.prediction !== b.content) throw new YouLostError()
       }
     })
-    return true
   }
 
-  setPrediction(index: number, prediction: FruitsEnum) {
+  setPrediction(index: number, prediction: FruitsEnum): void {
     this.boxes[index].prediction = prediction
   }
 
-  checkWin(): boolean {
-    return this.boxes.every((b, i) => {
-      if (i === this.firstOpenedIndex) return true
-      return b.prediction === b.content
-    })
+  checkGameStatus(): 'won' | 'lost' {
+    for (let i = 0; i < this.boxes.length; i++) {
+      if (i === this.firstOpenedIndex) continue
+      if (this.boxes[i].prediction !== this.boxes[i].content) {
+        return 'lost'
+      }
+    }
+    return 'won'
   }
 }
